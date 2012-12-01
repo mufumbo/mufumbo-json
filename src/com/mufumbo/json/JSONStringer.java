@@ -63,8 +63,8 @@ public class JSONStringer extends JSONWriter {
     /**
      * Make a fresh JSONStringer. It can be used to build one JSON text.
      */
-    public JSONStringer(ArrayList<Object> keyIndex) {
-        super(new StringWriter(), keyIndex);
+    public JSONStringer(JSONKeyCache keyCache) {
+        super(new StringWriter(), keyCache);
     }
 
     /**

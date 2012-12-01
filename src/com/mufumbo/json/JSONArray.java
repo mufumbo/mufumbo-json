@@ -70,17 +70,17 @@ public class JSONArray implements JSONArrayBasics {
 	 */
 	private ArrayList myArrayList;
 
-	ArrayList<Object> keyIndex;
+	JSONKeyCache keyCache;
 
 	/**
 	 * Construct an empty JSONArray.
 	 */
-	public JSONArray(ArrayList<Object> keyIndex, boolean s) {
-		initializeValues();
+	public JSONArray(JSONKeyCache keyCache) {
+		initializeValues(keyCache);
 	}
 
 	public JSONArray() {
-		initializeValues();
+		initializeValues(new JSONKeyCache());
 	}
 
 	/**
@@ -91,8 +91,8 @@ public class JSONArray implements JSONArrayBasics {
 	 * @throws JSONException
 	 *             If there is a syntax error.
 	 */
-	public JSONArray(JSONTokener x, ArrayList<Object> keyIndex) throws JSONException {
-		this(keyIndex, true);
+	public JSONArray(JSONTokener x, JSONKeyCache keyCache) throws JSONException {
+		this(keyCache);
 		initializeValues(x);
 	}
 	
@@ -101,12 +101,12 @@ public class JSONArray implements JSONArrayBasics {
 		initializeValues(x);
 	}
 	
-	public void initializeValues() {
+	public void initializeValues(JSONKeyCache keyCache) {
 		this.myArrayList = new ArrayList();
-		if (keyIndex == null)
-			this.keyIndex = new ArrayList<Object>();
+		if (keyCache == null)
+			this.keyCache = new JSONKeyCache();
 		else
-			this.keyIndex = keyIndex;
+			this.keyCache = keyCache;
 	}
 	
 	public void initializeValues(JSONTokener x) throws JSONException {
@@ -150,13 +150,13 @@ public class JSONArray implements JSONArrayBasics {
 	 * @throws JSONException
 	 *             If there is a syntax error.
 	 */
-	public JSONArray(String source, ArrayList<Object> keyIndex) throws JSONException {
-		this(new JSONTokener(source, keyIndex), keyIndex);
+	public JSONArray(String source, JSONKeyCache keyCache) throws JSONException {
+		this(new JSONTokener(source, keyCache), keyCache);
 	}
 	
 	public JSONArray(String source) throws JSONException {
 		this();
-		initializeValues(new JSONTokener(source, keyIndex));
+		initializeValues(new JSONTokener(source, keyCache));
 	}
 
 	/**
@@ -165,15 +165,15 @@ public class JSONArray implements JSONArrayBasics {
 	 * @param collection
 	 *            A Collection.
 	 */
-	public JSONArray(Collection collection, ArrayList<Object> keyIndex) {
-		this.keyIndex = keyIndex;
-		if (keyIndex == null)
-			keyIndex = new ArrayList<Object>();
+	public JSONArray(Collection collection, JSONKeyCache keyCache) {
+		this.keyCache = keyCache;
+		if (keyCache == null)
+			keyCache = new JSONKeyCache();
 		this.myArrayList = new ArrayList();
 		if (collection != null) {
 			Iterator iter = collection.iterator();
 			while (iter.hasNext()) {
-				this.myArrayList.add(JSONObject.wrap(iter.next(), keyIndex));
+				this.myArrayList.add(JSONObject.wrap(iter.next(), keyCache));
 			}
 		}
 	}
@@ -188,12 +188,12 @@ public class JSONArray implements JSONArrayBasics {
 	 * @throws JSONException
 	 *             If not an array.
 	 */
-	public JSONArray(Object array, ArrayList<Object> keyIndex) throws JSONException {
-		this(keyIndex, true);
+	public JSONArray(Object array, JSONKeyCache keyCache) throws JSONException {
+		this(keyCache);
 		if (array.getClass().isArray()) {
 			int length = Array.getLength(array);
 			for (int i = 0; i < length; i += 1) {
-				this.put(JSONObject.wrap(Array.get(array, i), keyIndex));
+				this.put(JSONObject.wrap(Array.get(array, i), keyCache));
 			}
 		}
 		else {
@@ -398,7 +398,7 @@ public class JSONArray implements JSONArrayBasics {
 			if (i > 0) {
 				sb.append(separator);
 			}
-			sb.append(JSONObject.valueToString(this.myArrayList.get(i), keyIndex));
+			sb.append(JSONObject.valueToString(this.myArrayList.get(i), keyCache));
 		}
 		return sb.toString();
 	}
@@ -636,7 +636,7 @@ public class JSONArray implements JSONArrayBasics {
 	 * @return this.
 	 */
 	public JSONArray put(Collection value) {
-		this.put(new JSONArray(value, keyIndex));
+		this.put(new JSONArray(value, keyCache));
 		return this;
 	}
 
@@ -689,7 +689,7 @@ public class JSONArray implements JSONArrayBasics {
 	 * @return this.
 	 */
 	public JSONArray put(Map value) {
-		this.put(new JSONObject(value, keyIndex));
+		this.put(new JSONObject(value, keyCache));
 		return this;
 	}
 
@@ -739,7 +739,7 @@ public class JSONArray implements JSONArrayBasics {
 	 *             not finite.
 	 */
 	public JSONArray put(int index, Collection value) throws JSONException {
-		this.put(index, new JSONArray(value, keyIndex));
+		this.put(index, new JSONArray(value, keyCache));
 		return this;
 	}
 
@@ -812,7 +812,7 @@ public class JSONArray implements JSONArrayBasics {
 	 *             an invalid number.
 	 */
 	public JSONArray put(int index, Map value) throws JSONException {
-		this.put(index, new JSONObject(value, keyIndex));
+		this.put(index, new JSONObject(value, keyCache));
 		return this;
 	}
 
@@ -879,7 +879,7 @@ public class JSONArray implements JSONArrayBasics {
 		if (names == null || names.length() == 0 || this.length() == 0) {
 			return null;
 		}
-		JSONObject jo = new JSONObject(keyIndex);
+		JSONObject jo = new JSONObject(keyCache);
 		for (int i = 0; i < names.length(); i += 1) {
 			jo.put(names.getString(i), this.opt(i));
 		}
@@ -960,7 +960,7 @@ public class JSONArray implements JSONArrayBasics {
 			writer.write('[');
 
 			if (length == 1) {
-				JSONObject.writeValue(writer, this.myArrayList.get(0), indentFactor, indent, keyIndex);
+				JSONObject.writeValue(writer, this.myArrayList.get(0), indentFactor, indent, keyCache);
 			}
 			else if (length != 0) {
 				final int newindent = indent + indentFactor;
@@ -973,7 +973,7 @@ public class JSONArray implements JSONArrayBasics {
 						writer.write('\n');
 					}
 					JSONObject.indent(writer, newindent);
-					JSONObject.writeValue(writer, this.myArrayList.get(i), indentFactor, newindent, keyIndex);
+					JSONObject.writeValue(writer, this.myArrayList.get(i), indentFactor, newindent, keyCache);
 					commanate = true;
 				}
 				if (indentFactor > 0) {

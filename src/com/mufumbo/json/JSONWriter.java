@@ -91,18 +91,18 @@ public class JSONWriter {
      */
     protected Writer writer;
     
-    ArrayList<Object> keyIndex;
+    JSONKeyCache keyCache;
 
     /**
      * Make a fresh JSONWriter. It can be used to build one JSON text.
      */
-    public JSONWriter(Writer w, ArrayList<Object> keyIndex) {
+    public JSONWriter(Writer w, JSONKeyCache keyCache) {
         this.comma = false;
         this.mode = 'i';
         this.stack = new JSONObject[maxdepth];
         this.top = 0;
         this.writer = w;
-        this.keyIndex = keyIndex;
+        this.keyCache = keyCache;
     }
 
     /**
@@ -241,7 +241,7 @@ public class JSONWriter {
         }
         if (this.mode == 'o' || this.mode == 'a') {
             this.append("{");
-            this.push(new JSONObject(keyIndex));
+            this.push(new JSONObject(keyCache));
             this.comma = false;
             return this;
         }
@@ -326,6 +326,6 @@ public class JSONWriter {
      * @throws JSONException If the value is out of sequence.
      */
     public JSONWriter value(Object object) throws JSONException {
-        return this.append(JSONObject.valueToString(object, keyIndex));
+        return this.append(JSONObject.valueToString(object, keyCache));
     }
 }

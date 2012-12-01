@@ -49,14 +49,14 @@ public class JSONTokener {
     private Reader  reader;
     private boolean usePrevious;
 
-    ArrayList<Object> keyIndex;
+    JSONKeyCache keyCache;
 
     /**
      * Construct a JSONTokener from a Reader.
      *
      * @param reader     A reader.
      */
-    public JSONTokener(Reader reader, ArrayList<Object> keyIndex) {
+    public JSONTokener(Reader reader, JSONKeyCache keyCache) {
         this.reader = reader.markSupported()
             ? reader
             : new BufferedReader(reader);
@@ -66,15 +66,15 @@ public class JSONTokener {
         this.index = 0;
         this.character = 1;
         this.line = 1;
-        this.keyIndex = keyIndex;
+        this.keyCache = keyCache;
     }
 
 
     /**
      * Construct a JSONTokener from an InputStream.
      */
-    public JSONTokener(InputStream inputStream, ArrayList<Object> keyIndex) throws JSONException {
-        this(new InputStreamReader(inputStream), keyIndex);
+    public JSONTokener(InputStream inputStream, JSONKeyCache keyCache) throws JSONException {
+        this(new InputStreamReader(inputStream), keyCache);
     }
 
 
@@ -83,8 +83,8 @@ public class JSONTokener {
      *
      * @param s     A source string.
      */
-    public JSONTokener(String s, ArrayList<Object> keyIndex) {
-        this(new StringReader(s), keyIndex);
+    public JSONTokener(String s, JSONKeyCache keyCache) {
+        this(new StringReader(s), keyCache);
     }
 
 
@@ -363,10 +363,10 @@ public class JSONTokener {
                 return this.nextString(c);
             case '{':
                 this.back();
-                return new JSONObject(this, keyIndex);
+                return new JSONObject(this, keyCache);
             case '[':
                 this.back();
-                return new JSONArray(this, keyIndex);
+                return new JSONArray(this, keyCache);
         }
 
         /*

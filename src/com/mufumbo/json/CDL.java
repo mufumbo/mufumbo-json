@@ -94,8 +94,8 @@ public class CDL {
      * @return A JSONArray of strings.
      * @throws JSONException
      */
-    public static JSONArray rowToJSONArray(JSONTokener x, ArrayList<Object> keyIndex) throws JSONException {
-        JSONArray ja = new JSONArray(keyIndex, true);
+    public static JSONArray rowToJSONArray(JSONTokener x, JSONKeyCache keyCache) throws JSONException {
+        JSONArray ja = new JSONArray(keyCache);
         for (;;) {
             String value = getValue(x);
             char c = x.next();
@@ -130,9 +130,9 @@ public class CDL {
      * @return A JSONObject combining the names and values.
      * @throws JSONException
      */
-    public static JSONObject rowToJSONObject(JSONArray names, JSONTokener x, ArrayList<Object> keyIndex)
+    public static JSONObject rowToJSONObject(JSONArray names, JSONTokener x, JSONKeyCache keyCache)
             throws JSONException {
-        JSONArray ja = rowToJSONArray(x, keyIndex);
+        JSONArray ja = rowToJSONArray(x, keyCache);
         return ja != null ? ja.toJSONObject(names) :  null;
     }
 
@@ -180,8 +180,8 @@ public class CDL {
      * @return A JSONArray of JSONObjects.
      * @throws JSONException
      */
-    public static JSONArray toJSONArray(String string, ArrayList<Object> keyIndex) throws JSONException {
-        return toJSONArray(new JSONTokener(string, keyIndex), keyIndex);
+    public static JSONArray toJSONArray(String string, JSONKeyCache keyCache) throws JSONException {
+        return toJSONArray(new JSONTokener(string, keyCache), keyCache);
     }
 
     /**
@@ -191,8 +191,8 @@ public class CDL {
      * @return A JSONArray of JSONObjects.
      * @throws JSONException
      */
-    public static JSONArray toJSONArray(JSONTokener x, ArrayList<Object> keyIndex) throws JSONException {
-        return toJSONArray(rowToJSONArray(x, keyIndex), x, keyIndex);
+    public static JSONArray toJSONArray(JSONTokener x, JSONKeyCache keyCache) throws JSONException {
+        return toJSONArray(rowToJSONArray(x, keyCache), x, keyCache);
     }
 
     /**
@@ -203,9 +203,9 @@ public class CDL {
      * @return A JSONArray of JSONObjects.
      * @throws JSONException
      */
-    public static JSONArray toJSONArray(JSONArray names, String string, ArrayList<Object> keyIndex)
+    public static JSONArray toJSONArray(JSONArray names, String string, JSONKeyCache keyCache)
             throws JSONException {
-        return toJSONArray(names, new JSONTokener(string, keyIndex), keyIndex);
+        return toJSONArray(names, new JSONTokener(string, keyCache), keyCache);
     }
 
     /**
@@ -216,14 +216,14 @@ public class CDL {
      * @return A JSONArray of JSONObjects.
      * @throws JSONException
      */
-    public static JSONArray toJSONArray(JSONArray names, JSONTokener x, ArrayList<Object> keyIndex)
+    public static JSONArray toJSONArray(JSONArray names, JSONTokener x, JSONKeyCache keyCache)
             throws JSONException {
         if (names == null || names.length() == 0) {
             return null;
         }
-        JSONArray ja = new JSONArray(keyIndex, true);
+        JSONArray ja = new JSONArray(keyCache);
         for (;;) {
-            JSONObject jo = rowToJSONObject(names, x, keyIndex);
+            JSONObject jo = rowToJSONObject(names, x, keyCache);
             if (jo == null) {
                 break;
             }

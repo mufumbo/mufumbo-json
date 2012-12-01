@@ -32,7 +32,7 @@ public class JSONTest extends TestCase {
 				}
 				long ntime = System.currentTimeMillis();
 
-				JSONObject obj = new JSONObject(json, new ArrayList<Object>());
+				JSONObject obj = new JSONObject(json);
 				for (int j = 0; j < 1000; j++) {
 					checkResponse(obj);
 				}

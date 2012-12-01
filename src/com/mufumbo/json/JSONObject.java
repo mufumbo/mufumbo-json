@@ -19,15 +19,15 @@ import java.util.Set;
 
 public class JSONObject implements JSONObjectBasics {
 	// Local copy of the keyIndex, in order to go through java serialization possible issues.
-	protected ArrayList<Object> keyIndex;
+	protected JSONKeyCache keyCache;
 	protected Object[] values;
 	protected int keyCount;
 
 	private final int findKeyIndex(Object key) {
-		final int result = keyIndex.indexOf(key);
+		final int result = keyCache.keyIndex.indexOf(key);
 		if (result < 0) {
-			keyIndex.add(key);
-			return keyIndex.size();
+			keyCache.keyIndex.add(key);
+			return keyCache.keyIndex.size();
 		}
 		return result;
 	}
@@ -44,7 +44,7 @@ public class JSONObject implements JSONObjectBasics {
 				}
 				long start = System.currentTimeMillis();
 				Object[] old = values;
-				values = new Object[keyIndex.size() + 1];
+				values = new Object[keyCache.keyIndex.size() + 1];
 				System.arraycopy(old, 0, values, 0, old.length);
 
 				System.out.println("growing[" + values.length + "] took " + (System.currentTimeMillis() - start));
@@ -115,21 +115,21 @@ public class JSONObject implements JSONObjectBasics {
 	/**
 	 * Construct an empty JSONObject.
 	 */
-	public JSONObject(ArrayList<Object> localKeyIndex) {
+	public JSONObject(JSONKeyCache localKeyIndex) {
 		initializeValues(localKeyIndex);
 	}
 
-	private void initializeValues(ArrayList<Object> localKeyIndex) {
+	private void initializeValues(JSONKeyCache localKeyIndex) {
 		if (localKeyIndex == null)
-			localKeyIndex = new ArrayList<Object>();
-		this.keyIndex = localKeyIndex;
-		values = new Object[localKeyIndex.size()];
+			localKeyIndex = new JSONKeyCache();
+		this.keyCache = localKeyIndex;
+		values = new Object[localKeyIndex.keyIndex.size()];
 	}
 	
-	public void initializeValues(JSONTokener x, ArrayList<Object> localKeyIndex) throws JSONException {
+	public void initializeValues(JSONTokener x, JSONKeyCache localKeyIndex) throws JSONException {
 		if (localKeyIndex == null)
-			localKeyIndex = new ArrayList<Object>();
-		this.keyIndex = localKeyIndex;
+			localKeyIndex = new JSONKeyCache();
+		this.keyCache = localKeyIndex;
 		char c;
 		String key;
 
@@ -193,7 +193,7 @@ public class JSONObject implements JSONObjectBasics {
 	 *                If a value is a non-finite number or if a name is
 	 *                duplicated.
 	 */
-	public JSONObject(JSONObject jo, String[] names, ArrayList<Object> localKeyIndex) {
+	public JSONObject(JSONObject jo, String[] names, JSONKeyCache localKeyIndex) {
 		this(localKeyIndex);
 		for (int i = 0; i < names.length; i += 1) {
 			try {
@@ -213,7 +213,7 @@ public class JSONObject implements JSONObjectBasics {
 	 *             If there is a syntax error in the source string or a
 	 *             duplicated key.
 	 */
-	public JSONObject(JSONTokener x, ArrayList<Object> localKeyIndex) throws JSONException {
+	public JSONObject(JSONTokener x, JSONKeyCache localKeyIndex) throws JSONException {
 		this(localKeyIndex);
 		initializeValues(x, localKeyIndex);
 	}
@@ -226,7 +226,7 @@ public class JSONObject implements JSONObjectBasics {
 	 *            the JSONObject.
 	 * @throws JSONException
 	 */
-	public JSONObject(Map map, ArrayList<Object> localKeyIndex) {
+	public JSONObject(Map map, JSONKeyCache localKeyIndex) {
 		initializeValues(localKeyIndex);
 		if (map != null) {
 			Iterator i = map.entrySet().iterator();
@@ -235,7 +235,7 @@ public class JSONObject implements JSONObjectBasics {
 				Object value = e.getValue();
 				if (value != null) {
 					// this.map.put(e.getKey(), wrap(value));
-					insertIndex(e.getKey(), wrap(value, keyIndex));
+					insertIndex(e.getKey(), wrap(value, keyCache));
 				}
 			}
 		}
@@ -261,7 +261,7 @@ public class JSONObject implements JSONObjectBasics {
 	 *            An object that has getter methods that should be used to make
 	 *            a JSONObject.
 	 */
-	public JSONObject(Object bean, ArrayList<Object> localKeyIndex) {
+	public JSONObject(Object bean, JSONKeyCache localKeyIndex) {
 		this(localKeyIndex);
 		this.populateMap(bean);
 	}
@@ -280,7 +280,7 @@ public class JSONObject implements JSONObjectBasics {
 	 *            An array of strings, the names of the fields to be obtained
 	 *            from the object.
 	 */
-	public JSONObject(Object object, String names[], ArrayList<Object> localKeyIndex) {
+	public JSONObject(Object object, String names[], JSONKeyCache localKeyIndex) {
 		this(localKeyIndex);
 		Class c = object.getClass();
 		for (int i = 0; i < names.length; i += 1) {
@@ -304,13 +304,13 @@ public class JSONObject implements JSONObjectBasics {
 	 *                If there is a syntax error in the source string or a
 	 *                duplicated key.
 	 */
-	public JSONObject(String source, ArrayList<Object> localKeyIndex) throws JSONException {
+	public JSONObject(String source, JSONKeyCache localKeyIndex) throws JSONException {
 		this(new JSONTokener(source, localKeyIndex), localKeyIndex);
 	}
 	
 	public JSONObject(String source) throws JSONException {
 		this();
-		initializeValues(new JSONTokener(source, keyIndex), keyIndex);
+		initializeValues(new JSONTokener(source, keyCache), keyCache);
 	}
 	
 
@@ -324,7 +324,7 @@ public class JSONObject implements JSONObjectBasics {
 	 * @throws JSONException
 	 *             If any JSONExceptions are detected.
 	 */
-	public JSONObject(String baseName, Locale locale, ArrayList<Object> localKeyIndex) throws JSONException {
+	public JSONObject(String baseName, Locale locale, JSONKeyCache localKeyIndex) throws JSONException {
 		this(localKeyIndex);
 		ResourceBundle bundle = ResourceBundle.getBundle(baseName, locale,
 				Thread.currentThread().getContextClassLoader());
@@ -383,14 +383,14 @@ public class JSONObject implements JSONObjectBasics {
 		Object object = this.opt(key);
 		if (object == null) {
 			this.put(key,
-					value instanceof JSONArray ? new JSONArray(keyIndex, true).put(value)
+					value instanceof JSONArray ? new JSONArray(keyCache).put(value)
 							: value);
 		}
 		else if (object instanceof JSONArray) {
 			((JSONArray) object).put(value);
 		}
 		else {
-			this.put(key, new JSONArray(keyIndex, true).put(object).put(value));
+			this.put(key, new JSONArray(keyCache).put(object).put(value));
 		}
 		return this;
 	}
@@ -414,7 +414,7 @@ public class JSONObject implements JSONObjectBasics {
 		testValidity(value);
 		Object object = this.opt(key);
 		if (object == null) {
-			this.put(key, new JSONArray(keyIndex, true).put(value));
+			this.put(key, new JSONArray(keyCache).put(value));
 		}
 		else if (object instanceof JSONArray) {
 			this.put(key, ((JSONArray) object).put(value));
@@ -739,7 +739,7 @@ public class JSONObject implements JSONObjectBasics {
 		Set<Object> res = new HashSet<Object>(keyCount);
 		for (int i = 0; i < this.values.length; i++) {
 			if (values[i] != null) {
-				Object key = keyIndex.get(i);
+				Object key = keyCache.keyIndex.get(i);
 				res.add(key);
 			}
 		}
@@ -763,7 +763,7 @@ public class JSONObject implements JSONObjectBasics {
 	 *         is empty.
 	 */
 	public JSONArray names() {
-		JSONArray ja = new JSONArray(keyIndex, true);
+		JSONArray ja = new JSONArray(keyCache);
 		Iterator keys = this.keys();
 		while (keys.hasNext()) {
 			ja.put(keys.next());
@@ -1041,7 +1041,7 @@ public class JSONObject implements JSONObjectBasics {
 						Object result = method.invoke(bean, (Object[]) null);
 						if (result != null) {
 							// this.map.put(key, wrap(result));
-							insertIndex(key, wrap(result, keyIndex));
+							insertIndex(key, wrap(result, keyCache));
 						}
 					}
 				}
@@ -1079,7 +1079,7 @@ public class JSONObject implements JSONObjectBasics {
 	 * @throws JSONException
 	 */
 	public JSONObject put(String key, Collection value) throws JSONException {
-		this.put(key, new JSONArray(value, keyIndex));
+		this.put(key, new JSONArray(value, keyCache));
 		return this;
 	}
 
@@ -1143,7 +1143,7 @@ public class JSONObject implements JSONObjectBasics {
 	 * @throws JSONException
 	 */
 	public JSONObject put(String key, Map value) throws JSONException {
-		this.put(key, new JSONObject(value, keyIndex));
+		this.put(key, new JSONObject(value, keyCache));
 		return this;
 	}
 
@@ -1414,7 +1414,7 @@ public class JSONObject implements JSONObjectBasics {
 		if (names == null || names.length() == 0) {
 			return null;
 		}
-		JSONArray ja = new JSONArray(keyIndex, true);
+		JSONArray ja = new JSONArray(keyCache);
 		for (int i = 0; i < names.length(); i += 1) {
 			ja.put(this.opt(names.getString(i)));
 		}
@@ -1459,7 +1459,7 @@ public class JSONObject implements JSONObjectBasics {
 	public String toString(int indentFactor) throws JSONException {
 		StringWriter w = new StringWriter();
 		synchronized (w.getBuffer()) {
-			return this.write(w, indentFactor, 0, keyIndex).toString();
+			return this.write(w, indentFactor, 0, keyCache).toString();
 		}
 	}
 
@@ -1487,7 +1487,7 @@ public class JSONObject implements JSONObjectBasics {
 	 * @throws JSONException
 	 *             If the value is or contains an invalid number.
 	 */
-	public static String valueToString(Object value, ArrayList<Object> localKeyIndex) throws JSONException {
+	public static String valueToString(Object value, JSONKeyCache localKeyIndex) throws JSONException {
 		if (value == null || value.equals(null)) {
 			return "null";
 		}
@@ -1535,7 +1535,7 @@ public class JSONObject implements JSONObjectBasics {
 	 *            The object to wrap
 	 * @return The wrapped value
 	 */
-	public static Object wrap(Object object, ArrayList<Object> localKeyIndex) {
+	public static Object wrap(Object object, JSONKeyCache localKeyIndex) {
 		try {
 			if (object == null) {
 				return NULL;
@@ -1583,12 +1583,12 @@ public class JSONObject implements JSONObjectBasics {
 	 * @return The writer.
 	 * @throws JSONException
 	 */
-	public Writer write(Writer writer, ArrayList<Object> localKeyIndex) throws JSONException {
+	public Writer write(Writer writer, JSONKeyCache localKeyIndex) throws JSONException {
 		return this.write(writer, 0, 0, localKeyIndex);
 	}
 
 	static final Writer writeValue(Writer writer, Object value,
-			int indentFactor, int indent, ArrayList<Object> localKeyIndex) throws JSONException, IOException {
+			int indentFactor, int indent, JSONKeyCache localKeyIndex) throws JSONException, IOException {
 		if (value == null || value.equals(null)) {
 			writer.write("null");
 		}
@@ -1645,7 +1645,7 @@ public class JSONObject implements JSONObjectBasics {
 	 * @return The writer.
 	 * @throws JSONException
 	 */
-	Writer write(Writer writer, int indentFactor, int indent, ArrayList<Object> localKeyIndex)
+	Writer write(Writer writer, int indentFactor, int indent, JSONKeyCache localKeyIndex)
 			throws JSONException {
 		try {
 			boolean commanate = false;
