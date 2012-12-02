@@ -5,8 +5,8 @@ This is a drop-in implementation of the org.JSON library that is optimized to re
 
 At first, the purpose was to optimize it for memory, but I have also noticed that the processing was optimized as well.
 
-From very basic testing I have noticed that the memory comsumption, on a 362kb JsonArray of JSONObjects, have reduced by **25%** 
-and the processing has improved by **7**.  
+From very basic testing I have noticed that the memory comsumption, on a 362kb JsonArray of JSONObjects, have reduced by 25% 
+and the processing has improved by 7%.  
 
 The only thing changed from the original org.json implementation is the caching of the JSONObject keys. Instead of duplicating them on every 
 object. It's very optimized for handling objects like this: 
@@ -33,6 +33,9 @@ The disadvantages are clear:
 
 Not everybody can do this and it has some restrictions. For example, the server needs to only send the actual json that is going to be used, 
 otherwise that memory will be hanging in the phones. 
+
+If I knew that my application was going to be successful, I would probably not go with this path. 
+Although now it's too late to rewrite all this stuff, so this optimizaiton as really necessary.
 
 Why use this?
 --------------
