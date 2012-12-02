@@ -44,6 +44,8 @@ public class JSONTest extends TestCase {
 						">>> nonoptimized[" + (ntime - start) + "] memory is [" + MemoryUtil.memoryUsageOf(nobj) + "][" + nsize + "kb] [" + nobj.toString().length()+ "] <<<" +
 						" and " +
 						">>> optimized[" + (time - ntime) + "] is [" + MemoryUtil.memoryUsageOf(obj) + "][" + size + "kb] out[" + obj.toString().length() + "] <<<");
+				
+				//assertSame(nobj.toString().length(), obj.toString().length());
 				// System.out.print("Total memory is " +
 				// MyAgent.getObjectSize(obj));
 			}

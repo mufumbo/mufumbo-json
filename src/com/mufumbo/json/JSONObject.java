@@ -8,7 +8,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -641,7 +640,7 @@ public class JSONObject implements JSONObjectBasics {
 	 * @return true if the key exists in the JSONObject.
 	 */
 	public boolean has(final String key) {
-		int i = keyCache.findKeyIndex(key);
+		final int i = keyCache.findKeyIndex(key);
 		if (values.length <= i)
 			return false;
 
@@ -1628,7 +1627,7 @@ public class JSONObject implements JSONObjectBasics {
 					final Object key = keys.next();
 
 					if (values.length > i) {
-						Object value = values[i];
+						final Object value = values[i];
 
 						if (value != null) {
 							if (commanate) {
