@@ -1,18 +1,19 @@
 What's This?
 ==============
 
-This is a drop-in implementation of the org.JSON library that is optimized to reduce memory comsumption on JSONObject instances that have many keys.
+This is a drop-in implementation of the org.json library that is optimized to reduce memory comsumption on JSONObject instances.
 
-At first, the purpose was to optimize it for memory, but I have also noticed that the processing was optimized as well.
+At first the purpose was to optimize it only for memory, but I have also noticed that the processing was optimized as well.
+
+The only thing changed from the original org.json implementation is that this packages uses a cache for the JSONObject keys.
+I believe the original org.json duplicates the keys for every JSONObject, even if they are inside the same JSONArray. 
+This package is very optimized for handling objects like these: 
+[{"id": 123, "value": "value 1"}, {"id": 321, "value": "value 2"}]
 
 From very basic testing I have noticed that the memory comsumption, on a 362kb JsonArray of JSONObjects, have reduced by 25% 
-and the processing has improved by 7%.  
+and the processing has improved by 7%.   
 
-The only thing changed from the original org.json implementation is the caching of the JSONObject keys. Instead of duplicating them on every 
-object. It's very optimized for handling objects like this: 
-[{"id": 123, "value": "value 1"}, {"id": 321, "value": "value 2"}] 
-
-I have tried to keep the same structure of the org.JSON library, so it means that you can execute this command in your project and it will work:
+I have tried to keep the same structure of the org.JSON library, so it means that you may be able to execute this command in your project and be 100% done with the migration:
 
 $ find ./src/ | grep java  | grep -v .svn | xargs perl -pi -e 's/org.json/com.mufumbo.json/g'
 
