@@ -2,13 +2,15 @@ package com.mufumbo.json;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Set;
 
 public class JSONKeyCache {
 	/**
 	 * A bit faster, but {@link HashMap} uses more memory than an {@link ArrayList}
 	 * Total GAIN[594kb] nonoptimized[11] memory is [16][2347kb] and optimized[9] is [24][1753kb]
 	 */
-	protected HashMap<Object, Integer> keyIndex;
+	protected LinkedHashMap<Object, Integer> keyIndex;
 
 	/**
 	 * This one saves more memory, with a bit slower processing.
@@ -18,8 +20,10 @@ public class JSONKeyCache {
 
 	public JSONKeyCache() {
 		//keyIndex = new ArrayList<Object>();
-		keyIndex = new HashMap<Object, Integer>();
+		keyIndex = new LinkedHashMap<Object, Integer>();
 	}
+	
+	protected int keyCount;
 
 	public final int findKeyIndex(final Object key) {
 		/*
@@ -34,10 +38,24 @@ public class JSONKeyCache {
 
 		final Integer result = keyIndex.get(key);
 		if (result == null) {
-			final int n = keyIndex.size();
-			keyIndex.put(key, n);
-			return n;
+			keyCount = keyIndex.size();
+			keyIndex.put(key, keyCount);
+			return keyCount;
 		}
 		return result;
+	}
+	
+	protected Set<Object> keySet() {
+		/*
+		final Set<Object> res = new HashSet<Object>(keyCache != null ? keyCache.keyCount : 0);
+		for (int i = 0; i < this.values.length; i++) {
+			if (values[i] != null) {
+				final Object key = keyCache.keyIndex.get(i);
+				res.add(key);
+			}
+		}
+		return res;
+		*/
+		return keyIndex.keySet();
 	}
 }

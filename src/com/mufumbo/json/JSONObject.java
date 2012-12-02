@@ -19,11 +19,9 @@ public class JSONObject implements JSONObjectBasics {
 	// Local copy of the keyIndex, in order to go through java serialization possible issues.
 	protected JSONKeyCache keyCache;
 	protected Object[] values;
-	protected int keyCount;
 
 	private final void insertIndex(final Object key, final Object value) {
 		if (value != null) {
-			keyCount++;
 			final int i = keyCache.findKeyIndex(key);
 
 			// Grow the values hash index if the keyIndex has changed
@@ -40,7 +38,7 @@ public class JSONObject implements JSONObjectBasics {
 		}
 	}
 
-	private Object getOrGrow(final Object key) {
+	private Object getValue(final Object key) {
 		final int i = keyCache.findKeyIndex(key);
 		if (values.length <= i)
 			return null;
@@ -646,7 +644,7 @@ public class JSONObject implements JSONObjectBasics {
 		int i = keyCache.findKeyIndex(key);
 		if (values.length <= i)
 			return false;
-		
+
 		return values[i] != null;
 	}
 
@@ -712,14 +710,7 @@ public class JSONObject implements JSONObjectBasics {
 	 * @return A keySet.
 	 */
 	public Set keySet() {
-		final Set<Object> res = new HashSet<Object>(keyCount);
-		for (int i = 0; i < this.values.length; i++) {
-			if (values[i] != null) {
-				final Object key = keyCache.keyIndex.get(i);
-				res.add(key);
-			}
-		}
-		return res;
+		return keyCache.keySet();
 	}
 
 	/**
@@ -728,7 +719,7 @@ public class JSONObject implements JSONObjectBasics {
 	 * @return The number of keys in the JSONObject.
 	 */
 	public int length() {
-		return keyCount;
+		return keyCache.keyCount;
 	}
 
 	/**
@@ -787,7 +778,7 @@ public class JSONObject implements JSONObjectBasics {
 		if (key == null)
 			return null;
 
-		return getOrGrow(key);
+		return getValue(key);
 	}
 
 	/**
@@ -1614,33 +1605,50 @@ public class JSONObject implements JSONObjectBasics {
 
 			if (length == 1) {
 				final Object key = keys.next();
-				writer.write(quote(key.toString()));
-				writer.write(':');
-				if (indentFactor > 0) {
-					writer.write(' ');
-				}
 
-				writeValue(writer, getOrGrow(key), indentFactor, indent, localKeyIndex);
+				if (values.length > 0) {
+					final Object value = values[0];
+					if (value != null) {
+						writer.write(quote(key.toString()));
+						writer.write(':');
+						if (indentFactor > 0) {
+							writer.write(' ');
+						}
+
+						writeValue(writer, value, indentFactor, indent, localKeyIndex);
+					}
+				}
 			}
 			else if (length != 0) {
 				final int newindent = indent + indentFactor;
+
+				// since the keys come from a LinkedHashMap, we can guarantee the index without having to call findKeyIndex
+				int i = 0;
 				while (keys.hasNext()) {
 					final Object key = keys.next();
-					if (commanate) {
-						writer.write(',');
-					}
-					if (indentFactor > 0) {
-						writer.write('\n');
-					}
-					indent(writer, newindent);
-					writer.write(quote(key.toString()));
-					writer.write(':');
-					if (indentFactor > 0) {
-						writer.write(' ');
-					}
 
-					writeValue(writer, getOrGrow(key), indentFactor, newindent, localKeyIndex);
-					commanate = true;
+					if (values.length > i) {
+						Object value = values[i];
+
+						if (value != null) {
+							if (commanate) {
+								writer.write(',');
+							}
+							if (indentFactor > 0) {
+								writer.write('\n');
+							}
+							indent(writer, newindent);
+							writer.write(quote(key.toString()));
+							writer.write(':');
+							if (indentFactor > 0) {
+								writer.write(' ');
+							}
+
+							writeValue(writer, value, indentFactor, newindent, localKeyIndex);
+							commanate = true;
+						}
+					}
+					i++;
 				}
 				if (indentFactor > 0) {
 					writer.write('\n');

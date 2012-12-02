@@ -41,9 +41,9 @@ public class JSONTest extends TestCase {
 				long size = Math.round(MemoryUtil.deepMemoryUsageOf(obj, VisibilityFilter.ALL) * 0.000976562);
 
 				System.out.println("Processing str[" + json.length() + "] --- GAIN[" + (nsize - size) + "kb] --- " +  
-						"nonoptimized[" + (ntime - start) + "] memory is [" + MemoryUtil.memoryUsageOf(nobj) + "][" + nsize + "kb]" +
+						">>> nonoptimized[" + (ntime - start) + "] memory is [" + MemoryUtil.memoryUsageOf(nobj) + "][" + nsize + "kb] [" + nobj.toString().length()+ "] <<<" +
 						" and " +
-						"optimized[" + (time - ntime) + "] is [" + MemoryUtil.memoryUsageOf(obj) + "][" + size + "kb]");
+						">>> optimized[" + (time - ntime) + "] is [" + MemoryUtil.memoryUsageOf(obj) + "][" + size + "kb] out[" + obj.toString().length() + "] <<<");
 				// System.out.print("Total memory is " +
 				// MyAgent.getObjectSize(obj));
 			}
