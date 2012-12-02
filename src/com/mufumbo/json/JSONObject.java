@@ -1607,7 +1607,7 @@ public class JSONObject implements JSONObjectBasics {
 
 				if (values.length > 0) {
 					final Object value = values[0];
-					if (value != null) {
+					if (value != null && !NULL.equals(value)) {
 						writer.write(quote(key.toString()));
 						writer.write(':');
 						if (indentFactor > 0) {
@@ -1629,7 +1629,7 @@ public class JSONObject implements JSONObjectBasics {
 					if (values.length > i) {
 						final Object value = values[i];
 
-						if (value != null) {
+						if (value != null && !NULL.equals(value)) {
 							if (commanate) {
 								writer.write(',');
 							}
