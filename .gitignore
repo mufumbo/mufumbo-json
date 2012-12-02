@@ -4,3 +4,5 @@
 .settings/org.eclipse.jdt.ui.prefs
 
 bin/com/mufumbo/json/JSONStringer.class
+
+*.class
