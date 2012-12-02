@@ -25,7 +25,6 @@ public class JSONTest extends TestCase {
 
 			for (int i = 0; i < 1000; i++) {
 				long start = System.currentTimeMillis();
-
 				org.json.JSONObject nobj = new org.json.JSONObject(json);
 				for (int j = 0; j < 1000; j++) {
 					checkResponse(nobj);
@@ -41,7 +40,7 @@ public class JSONTest extends TestCase {
 				long nsize = Math.round(MemoryUtil.deepMemoryUsageOf(nobj, VisibilityFilter.ALL) * 0.000976562);
 				long size = Math.round(MemoryUtil.deepMemoryUsageOf(obj, VisibilityFilter.ALL) * 0.000976562);
 
-				System.out.println("Total GAIN[" + (nsize - size) + "] " +
+				System.out.println("Processing str[" + json.length() + "] --- GAIN[" + (nsize - size) + "kb] --- " +  
 						"nonoptimized[" + (ntime - start) + "] memory is [" + MemoryUtil.memoryUsageOf(nobj) + "][" + nsize + "kb]" +
 						" and " +
 						"optimized[" + (time - ntime) + "] is [" + MemoryUtil.memoryUsageOf(obj) + "][" + size + "kb]");
@@ -67,7 +66,7 @@ public class JSONTest extends TestCase {
 
 	public void checkRecipe(JSONObjectBasics r) {
 		assertNotNull(r.optString("title"));
-		assertNotNull(r.optString("ingredients"));
+		assertNotNull(r.optJSONArray("ingredients"));
 	}
 
 	static String readFully(final Reader reader) throws IOException {

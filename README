@@ -1,0 +1,58 @@
+What's This?
+==============
+
+This is a drop-in implementation of the org.JSON library that is optimized to reduce memory comsumption on JSONObject instances that have many keys.
+
+At first, the purpose was to optimize it for memory, but I have also noticed that the processing was optimized as well.
+
+From very basic testing I have noticed that the memory comsumption, on a 362kb JsonArray of JSONObjects, have reduced by **25%** 
+and the processing has improved by **7**.  
+
+The only thing changed from the original org.json implementation is the caching of the JSONObject keys. Instead of duplicating them on every 
+object. It's very optimized for handling objects like this: 
+[{"id": 123, "value": "value 1"}, {"id": 321, "value": "value 2"}] 
+
+I have tried to keep the same structure of the org.JSON library, so it means that you can execute this command in your project and it will work:
+
+$ find ./src/ | grep java  | grep -v .svn | xargs perl -pi -e 's/org.json/com.mufumbo.json/g'
+
+Why?!
+--------------
+
+When I wrote my first android application it felt like a good idea to work with the JSON objects directly and never actually transforming 
+them into translated Java model objects.
+
+At that time the android phones were very slow and the advantage was clear:
+- Faster to write the code. (No need to create code for transforming JSONObjects into an Java object)
+- Faster to process. (No memory allocation of model objects and later GC of the JSONObjects)
+- No need to write code to serialize the objects and pass them between activities. (Just make startActivity(new Intent(this, myJsonObject.toString()) and you're done)
+
+The disadvantages are clear: 
+- Spaghetti code with no clear models. 
+- Waste of memory due to JSONObject way of handling the data.
+
+Not everybody can do this and it has some restrictions. For example, the server needs to only send the actual json that is going to be used, 
+otherwise that memory will be hanging in the phones. 
+
+Why use this?
+--------------
+
+After two years the android phones are fast and this type of optimization doesn't make sense anymore. 
+The problem is that I still have a couple of millions of users with old phones. 
+
+The most difficult part is that my app now look like android 4.3 interface, but I still have users on 1.6. The problem there is that it means
+that memory management is going to explode at some time. Due to beaultiful graphics and other things that you will want to put on your app.
+
+In my case I have noticed that the JSON objects were consuming way too much memory, so I had to optimize it.  
+
+
+How to test this?
+--------------
+
+For the "benchmarks" I have done a super simple JSONTest.java file that has a JUnit test. To run it, remember to add this to the eclipse VM arguments:
+
+--javaagent:~/YOURworkspace/mufumbo-json/lib/classmexer.jar
+
+This still needs to be validated. The results, in my computer, are:
+
+*Processing str[362299] --- GAIN[594kb] --- nonoptimized[20] memory is [16][2347kb] and optimized[14] is [24][1753kb]*

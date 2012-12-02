@@ -21,31 +21,19 @@ public class JSONObject implements JSONObjectBasics {
 	protected Object[] values;
 	protected int keyCount;
 
-	private final int findKeyIndex(final Object key) {
-		final int result = keyCache.keyIndex.indexOf(key);
-		if (result < 0) {
-			keyCache.keyIndex.add(key);
-			return keyCache.keyIndex.size();
-		}
-		return result;
-	}
-
 	private final void insertIndex(final Object key, final Object value) {
 		if (value != null) {
 			keyCount++;
-			final int i = findKeyIndex(key);
+			final int i = keyCache.findKeyIndex(key);
 
 			// Grow the values hash index if the keyIndex has changed
 			if (i >= values.length) {
-				if (values.length == 48) {
-					System.out.println("should stop growing[" + values.length + "]");
-				}
-				final long start = System.currentTimeMillis();
+				//final long start = System.currentTimeMillis();
 				final Object[] old = values;
 				values = new Object[keyCache.keyIndex.size() + 1];
 				System.arraycopy(old, 0, values, 0, old.length);
 
-				System.out.println("growing[" + values.length + "] took " + (System.currentTimeMillis() - start));
+				//System.out.println("growing[" + values.length + "] took " + (System.currentTimeMillis() - start));
 			}
 
 			values[i] = value;
@@ -53,7 +41,7 @@ public class JSONObject implements JSONObjectBasics {
 	}
 
 	private Object getOrGrow(final Object key) {
-		final int i = findKeyIndex(key);
+		final int i = keyCache.findKeyIndex(key);
 		if (values.length <= i)
 			return null;
 		return values[i];
@@ -655,8 +643,11 @@ public class JSONObject implements JSONObjectBasics {
 	 * @return true if the key exists in the JSONObject.
 	 */
 	public boolean has(final String key) {
-		return getOrGrow(key) != null;
-		// return this.map.containsKey(key);
+		int i = keyCache.findKeyIndex(key);
+		if (values.length <= i)
+			return false;
+		
+		return values[i] != null;
 	}
 
 	/**
@@ -1300,7 +1291,7 @@ public class JSONObject implements JSONObjectBasics {
 	 *         no value.
 	 */
 	public Object remove(final String key) {
-		final int i = findKeyIndex(key);
+		final int i = keyCache.findKeyIndex(key);
 		if (i >= values.length)
 			return null;
 		final Object val = values[i];
