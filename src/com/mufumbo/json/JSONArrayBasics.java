@@ -5,6 +5,8 @@ package com.mufumbo.json;
  */
 public interface JSONArrayBasics {
 	public JSONObjectBasics optJSONObject(int idx);
+
 	public JSONArrayBasics optJSONArray(int idx);
+
 	public int length();
 }
