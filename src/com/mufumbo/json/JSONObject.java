@@ -19,7 +19,7 @@ public class JSONObject implements JSONObjectBasics {
 	protected JSONKeyCache keyCache;
 	protected Object[] values;
 
-	private final void insertIndex(final Object key, final Object value) {
+	private final void insertIndex(final Object key, Object value) {
 		if (value != null) {
 			final int i = keyCache.findKeyIndex(key);
 
@@ -33,6 +33,7 @@ public class JSONObject implements JSONObjectBasics {
 				//System.out.println("growing[" + values.length + "] took " + (System.currentTimeMillis() - start));
 			}
 
+			value = keyCache.getFromObjectCache(value);
 			values[i] = value;
 		}
 	}
@@ -1607,7 +1608,7 @@ public class JSONObject implements JSONObjectBasics {
 
 				if (values.length > 0) {
 					final Object value = values[0];
-					if (value != null && !NULL.equals(value)) {
+					if ((value != null) && !NULL.equals(value)) {
 						writer.write(quote(key.toString()));
 						writer.write(':');
 						if (indentFactor > 0) {
@@ -1629,7 +1630,7 @@ public class JSONObject implements JSONObjectBasics {
 					if (values.length > i) {
 						final Object value = values[i];
 
-						if (value != null && !NULL.equals(value)) {
+						if ((value != null) && !NULL.equals(value)) {
 							if (commanate) {
 								writer.write(',');
 							}

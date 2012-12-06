@@ -25,14 +25,20 @@ public class JSONTest extends TestCase {
 
 			for (int i = 0; i < 1000; i++) {
 				long start = System.currentTimeMillis();
-				org.json.JSONObject nobj = new org.json.JSONObject(json);
-				for (int j = 0; j < 1000; j++) {
+				org.json.JSONObject nobj = new org.json.JSONObject(new String(json));
+				for (int j = 0; j < 5000; j++) {
+					String str = "just testin! this " + System.currentTimeMillis();
+					nobj.put("test", str);
+					assertTrue(str.equals(nobj.get("test")));
 					checkResponse(nobj);
 				}
 				long ntime = System.currentTimeMillis();
 
-				JSONObject obj = new JSONObject(json);
-				for (int j = 0; j < 1000; j++) {
+				JSONObject obj = new JSONObject(new String(json));
+				for (int j = 0; j < 5000; j++) {
+					String str = "just testin! this " + System.currentTimeMillis();
+					obj.put("test", str);
+					assertTrue(str.equals(obj.get("test")));
 					checkResponse(obj);
 				}
 				long time = System.currentTimeMillis();
@@ -40,10 +46,15 @@ public class JSONTest extends TestCase {
 				long nsize = Math.round(MemoryUtil.deepMemoryUsageOf(nobj, VisibilityFilter.ALL) * 0.000976562);
 				long size = Math.round(MemoryUtil.deepMemoryUsageOf(obj, VisibilityFilter.ALL) * 0.000976562);
 
-				System.out.println("Processing str[" + json.length() + "] --- GAIN[" + (nsize - size) + "kb] --- " +  
-						">>> nonoptimized[" + (ntime - start) + "] memory is [" + MemoryUtil.memoryUsageOf(nobj) + "][" + nsize + "kb] [" + nobj.toString().length()+ "] <<<" +
+				long nptime = (ntime - start);
+				long ptime = (time - ntime);
+				
+				System.out.println("Processing str[" + json.length() + "] " +
+						"--- MGAIN[" + (nsize - size) + "kb] " + ((float) (nsize - size) / nsize) + "% --- " +
+						"--- PGAIN[" + (nptime - ptime) + "ms] " + ((float) (nptime - ptime) / nptime) + "% --- " +
+						"\n>>> nonoptimized[" + (ntime - start) + "] memory is [" + MemoryUtil.memoryUsageOf(nobj) + "][" + nsize + "kb] [" + nobj.toString().length()+ "] <<<" +
 						" and " +
-						">>> optimized[" + (time - ntime) + "] is [" + MemoryUtil.memoryUsageOf(obj) + "][" + size + "kb] out[" + obj.toString().length() + "] <<<");
+						">>> optimized[" + (time - ntime) + "] is [" + MemoryUtil.memoryUsageOf(obj) + "][" + size + "kb] out[" + obj.toString().length() + "] <<<\n\n");
 				
 				assertEquals(nobj.toString().length(), obj.toString().length());
 				assertSame(nobj.optString("NON VALID KEY"), obj.optString("NON VALID KEY"));
