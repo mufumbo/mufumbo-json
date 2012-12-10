@@ -12,6 +12,7 @@ import com.javamex.classmexer.MemoryUtil;
 import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 import com.mufumbo.json.JSONArray;
 import com.mufumbo.json.JSONArrayBasics;
+import com.mufumbo.json.JSONKeyCache;
 import com.mufumbo.json.JSONObject;
 import com.mufumbo.json.JSONObjectBasics;
 
@@ -23,7 +24,10 @@ public class JSONTest extends TestCase {
 			System.out.println("Total STRING memory is "
 					+ MemoryUtil.deepMemoryUsageOf(json, VisibilityFilter.ALL));
 
-			for (int i = 0; i < 1000; i++) {
+			float procAccumulated = 0;
+			float memAccumulated = 0;
+			int RUNS = 50;
+			for (int i = 0; i < RUNS; i++) {
 				long start = System.currentTimeMillis();
 				org.json.JSONObject nobj = new org.json.JSONObject(new String(json));
 				for (int j = 0; j < 5000; j++) {
@@ -34,7 +38,8 @@ public class JSONTest extends TestCase {
 				}
 				long ntime = System.currentTimeMillis();
 
-				JSONObject obj = new JSONObject(new String(json));
+				JSONKeyCache cache = new JSONKeyCache();
+				JSONObject obj = new JSONObject(new String(json), cache);
 				for (int j = 0; j < 5000; j++) {
 					String str = "just testin! this " + System.currentTimeMillis();
 					obj.put("test", str);
@@ -49,19 +54,31 @@ public class JSONTest extends TestCase {
 				long nptime = (ntime - start);
 				long ptime = (time - ntime);
 				
-				System.out.println("Processing str[" + json.length() + "] " +
-						"--- MGAIN[" + (nsize - size) + "kb] " + ((float) (nsize - size) / nsize) + "% --- " +
-						"--- PGAIN[" + (nptime - ptime) + "ms] " + ((float) (nptime - ptime) / nptime) + "% --- " +
-						"\n>>> nonoptimized[" + (ntime - start) + "] memory is [" + MemoryUtil.memoryUsageOf(nobj) + "][" + nsize + "kb] [" + nobj.toString().length()+ "] <<<" +
-						" and " +
-						">>> optimized[" + (time - ntime) + "] is [" + MemoryUtil.memoryUsageOf(obj) + "][" + size + "kb] out[" + obj.toString().length() + "] <<<\n\n");
+				float pgain = ((float) (nptime - ptime) / nptime);
+				float mgain = ((float) (nsize - size) / nsize);
 				
+				memAccumulated += mgain;
+				procAccumulated += pgain;
+				
+				System.out.println("Processing str[" + json.length() + "] " +
+						"--- MGAIN[" + (nsize - size) + "kb] " + mgain + "% --- " +
+						"--- PGAIN[" + (nptime - ptime) + "ms] " + pgain + "% --- " +
+						"\n>>> nonoptimized[" + (ntime - start) + "] memory is [" + MemoryUtil.memoryUsageOf(nobj) + "][" + nsize + "kb] [" + nobj.toString().length() + "] <<<" +
+						" and " +
+						">>> optimized[" + (time - ntime) + "] is [" + MemoryUtil.memoryUsageOf(obj) + "][" + size + "kb] out[" + obj.toString().length() + "] <<<");
+				cache.flushStats();
+				System.out.println("\n\n");
 				assertEquals(nobj.toString().length(), obj.toString().length());
 				assertSame(nobj.optString("NON VALID KEY"), obj.optString("NON VALID KEY"));
-				
+
+				for (int k = 0; k < 10; k++) {
+				//	System.gc();
+				}
 				// System.out.print("Total memory is " +
 				// MyAgent.getObjectSize(obj));
 			}
+			
+			System.out.println("Proc[" + ((float) (procAccumulated/RUNS)) + "] MEM[" + ((float) (memAccumulated/RUNS)) + "]");
 		}
 		catch (Throwable e) {
 			e.printStackTrace();

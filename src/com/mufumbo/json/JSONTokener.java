@@ -46,6 +46,9 @@ public class JSONTokener {
 	private boolean usePrevious;
 
 	JSONKeyCache keyCache;
+	
+	// less GC?
+	StringBuilder cached;
 
 	/**
 	 * Construct a JSONTokener from a Reader.
@@ -64,6 +67,16 @@ public class JSONTokener {
 		this.character = 1;
 		this.line = 1;
 		this.keyCache = keyCache;
+		this.cached = new StringBuilder();
+	}
+	
+	protected StringBuilder getCached() {
+		final int len = cached.length();
+		if (len > 0) {
+			//cached.replace(0, len, "");
+			cached.setLength(0);
+		}
+		return cached;
 	}
 
 	/**
@@ -105,7 +118,7 @@ public class JSONTokener {
 	 *            between 'a' and 'f'.
 	 * @return An int between 0 and 15, or -1 if c was not a hex digit.
 	 */
-	public static int dehexchar(final char c) {
+	public final static int dehexchar(final char c) {
 		if ((c >= '0') && (c <= '9'))
 			return c - '0';
 		if ((c >= 'A') && (c <= 'F'))
@@ -246,7 +259,7 @@ public class JSONTokener {
 	 */
 	public String nextString(final char quote) throws JSONException {
 		char c;
-		final StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = getCached();
 		for (;;) {
 			c = this.next();
 			switch (c) {
@@ -273,7 +286,8 @@ public class JSONTokener {
 							sb.append('\r');
 							break;
 						case 'u':
-							sb.append((char) Integer.parseInt(this.next(4), 16));
+							final String toRadix = this.next(4);
+							sb.append((char) Integer.parseInt(toRadix, 16));
 							break;
 						case '"':
 						case '\'':
@@ -302,7 +316,7 @@ public class JSONTokener {
 	 * @return A string.
 	 */
 	public String nextTo(final char delimiter) throws JSONException {
-		final StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = getCached();
 		for (;;) {
 			final char c = this.next();
 			if ((c == delimiter) || (c == 0) || (c == '\n') || (c == '\r')) {
@@ -325,7 +339,7 @@ public class JSONTokener {
 	 */
 	public String nextTo(final String delimiters) throws JSONException {
 		char c;
-		final StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = getCached();
 		for (;;) {
 			c = this.next();
 			if ((delimiters.indexOf(c) >= 0) || (c == 0) ||
@@ -372,7 +386,7 @@ public class JSONTokener {
 		 * formatting character.
 		 */
 
-		final StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = getCached();
 		while ((c >= ' ') && (",:]}/\\\"[{;=#".indexOf(c) < 0)) {
 			sb.append(c);
 			c = this.next();

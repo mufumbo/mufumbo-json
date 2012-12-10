@@ -1,10 +1,14 @@
 package com.mufumbo.json;
 
 import java.io.Serializable;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 public class JSONKeyCache implements Serializable {
 	private static final long serialVersionUID = 4399741430699209789L;
@@ -15,8 +19,16 @@ public class JSONKeyCache implements Serializable {
 	 */
 	protected LinkedHashMap<Object, Integer> keyIndex;
 
-	protected transient Object objectCache = null;
-	//int cacheIndex;
+	//protected transient Object objectCache = null;
+	//protected transient Object[] objectCache = new Object[10];
+	//Map<Object, Object> objectCache = new WeakHashMap<>(50);
+	protected transient SoftReference[] objectCache = new SoftReference[50];
+	protected int cacheIndex;
+
+	int objCalls;
+	int objTypeCalls;
+	int objHit;
+	int weakMiss;
 
 	public JSONKeyCache() {
 		keyIndex = new LinkedHashMap<Object, Integer>();
@@ -38,17 +50,17 @@ public class JSONKeyCache implements Serializable {
 		return keyIndex.keySet();
 	}
 
-	public Object getFromObjectCache(final Object obj) {
-		if (!String.class.isInstance(obj))
-			return obj;
-
-		final String intern = ((String) obj).intern();
-		if (intern == objectCache)
-			return objectCache;
-
-		objectCache = intern;
-		return objectCache;
-	}
+	/*
+	 * public Object getFromObjectCache(final Object obj) {
+	 * if (!String.class.isInstance(obj))
+	 * return obj;
+	 * final String intern = ((String) obj).intern();
+	 * if (intern == objectCache)
+	 * return objectCache;
+	 * objectCache = intern;
+	 * return objectCache;
+	 * }
+	 */
 
 	/*
 	 * public Object getFromObjectCache(Object obj) {
@@ -77,4 +89,107 @@ public class JSONKeyCache implements Serializable {
 	 * return intern;
 	 * }
 	 */
+
+	/*
+	 * public Object getFromObjectCache(Object obj) {
+	 * objCalls++;
+	 * if (objectCache == null)
+	 * return obj;
+	 * if (!String.class.isInstance(obj))
+	 * return obj;
+	 * Object res = objectCache.get(obj);
+	 * if (res == null) {
+	 * objectCache.put(obj, obj);
+	 * return obj;
+	 * }
+	 * objHit++;
+	 * return res;
+	 * }
+	 */
+
+	/*
+	 * public Object getFromObjectCache(Object obj) {
+	 * objCalls++;
+	 * if (objectCache == null)
+	 * return obj;
+	 * if (!String.class.isInstance(obj))
+	 * return obj;
+	 * final int len = objectCache.length;
+	 * if (len == 0)
+	 * return obj;
+	 * String intern = (String) obj;
+	 * for (int i = 0; i < len; i++) {
+	 * Object o = objectCache[i];
+	 * if (o != null) {
+	 * if (intern.equals(o)) {
+	 * objHit++;
+	 * return o;
+	 * }
+	 * }
+	 * else {
+	 * break;
+	 * }
+	 * }
+	 * objectCache[cacheIndex++] = intern;
+	 * if (cacheIndex >= len) {
+	 * cacheIndex = 0;
+	 * }
+	 * return intern;
+	 * }
+	 */
+
+	public Object getFromObjectCache(Object obj) {
+		objCalls++;
+
+		if (objectCache == null)
+			return obj;
+
+		if (!String.class.isInstance(obj))
+			return obj;
+
+		objTypeCalls++;
+
+		final int len = objectCache.length;
+		if (len == 0)
+			return obj;
+
+		for (int i = 0; i < len; i++) {
+			SoftReference o = objectCache[i];
+			if (o != null) {
+				Object c = o.get();
+				if (c != null) {
+					if (obj.equals(c)) {
+						objHit++;
+						return c;
+					}
+				}
+				else {
+					weakMiss++;
+				}
+			}
+			else {
+				break;
+			}
+		}
+
+		if (objectCache[cacheIndex] != null) {
+			objectCache[cacheIndex].clear();
+		}
+
+		objectCache[cacheIndex] = new SoftReference(obj);
+
+		if (++cacheIndex >= len) {
+			cacheIndex = 0;
+		}
+
+		return obj;
+	}
+
+	public void flushStats() {
+		System.out.println("Cache stats calls[" + objCalls + "] typeCalls[" + objTypeCalls + "] hits[" + objHit + "] weakMiss[" + weakMiss + "]");
+		objCalls = 0;
+		objHit = 0;
+		objTypeCalls = 0;
+		weakMiss = 0;
+	}
 }

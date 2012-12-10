@@ -53,7 +53,7 @@ public class CDL {
 	private static String getValue(final JSONTokener x) throws JSONException {
 		char c;
 		char q;
-		StringBuffer sb;
+		StringBuilder sb;
 		do {
 			c = x.next();
 		} while ((c == ' ') || (c == '\t'));
@@ -63,7 +63,7 @@ public class CDL {
 			case '"':
 			case '\'':
 				q = c;
-				sb = new StringBuffer();
+				sb = new StringBuilder();
 				for (;;) {
 					c = x.next();
 					if (c == q) {
@@ -144,7 +144,7 @@ public class CDL {
 	 * @return A string ending in NEWLINE.
 	 */
 	public static String rowToString(final JSONArray ja) {
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < ja.length(); i += 1) {
 			if (i > 0) {
 				sb.append(',');
@@ -280,7 +280,7 @@ public class CDL {
 			throws JSONException {
 		if ((names == null) || (names.length() == 0))
 			return null;
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < ja.length(); i += 1) {
 			final JSONObject jo = ja.optJSONObject(i);
 			if (jo != null) {

@@ -386,7 +386,7 @@ public class JSONArray implements JSONArrayBasics {
 	 */
 	public String join(final String separator) throws JSONException {
 		final int len = this.length();
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 
 		for (int i = 0; i < len; i += 1) {
 			if (i > 0) {
