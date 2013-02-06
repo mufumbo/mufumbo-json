@@ -46,7 +46,7 @@ public class JSONTokener {
 	private boolean usePrevious;
 
 	JSONKeyCache keyCache;
-	
+
 	// less GC?
 	StringBuilder cached;
 
@@ -69,12 +69,13 @@ public class JSONTokener {
 		this.keyCache = keyCache;
 		this.cached = new StringBuilder();
 	}
-	
+
 	protected StringBuilder getCached() {
 		final int len = cached.length();
 		if (len > 0) {
 			//cached.replace(0, len, "");
-			cached.setLength(0);
+			//cached.setLength(0);
+			cached.delete(0, len);
 		}
 		return cached;
 	}

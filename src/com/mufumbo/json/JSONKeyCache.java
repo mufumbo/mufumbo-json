@@ -2,13 +2,10 @@ package com.mufumbo.json;
 
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 public class JSONKeyCache implements Serializable {
 	private static final long serialVersionUID = 4399741430699209789L;
@@ -138,7 +135,7 @@ public class JSONKeyCache implements Serializable {
 	 * }
 	 */
 
-	public Object getFromObjectCache(Object obj) {
+	public Object getFromObjectCache(final Object obj) {
 		objCalls++;
 
 		if (objectCache == null)
@@ -154,9 +151,9 @@ public class JSONKeyCache implements Serializable {
 			return obj;
 
 		for (int i = 0; i < len; i++) {
-			SoftReference o = objectCache[i];
+			final SoftReference o = objectCache[i];
 			if (o != null) {
-				Object c = o.get();
+				final Object c = o.get();
 				if (c != null) {
 					if (obj.equals(c)) {
 						objHit++;
