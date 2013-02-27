@@ -12,11 +12,35 @@ import com.javamex.classmexer.MemoryUtil;
 import com.javamex.classmexer.MemoryUtil.VisibilityFilter;
 import com.mufumbo.json.JSONArray;
 import com.mufumbo.json.JSONArrayBasics;
+import com.mufumbo.json.JSONException;
 import com.mufumbo.json.JSONKeyCache;
 import com.mufumbo.json.JSONObject;
 import com.mufumbo.json.JSONObjectBasics;
 
 public class JSONTest extends TestCase {
+	public void testAndroidError() throws JSONException {
+		JSONKeyCache jkc = new JSONKeyCache();
+		final JSONObject json = new JSONObject(jkc);
+		final JSONObject failure = new JSONObject(jkc);
+		json.accumulate("result", null);
+		json.accumulate("success", false);
+		failure.accumulate("message", "my message");
+		json.accumulate("failure", failure);
+		
+		JSONKeyCache jkc2 = new JSONKeyCache();
+		final JSONObject json2 = new JSONObject(jkc2);
+		final JSONObject failure2 = new JSONObject(jkc2);
+		//json2.put("result", null);
+		json2.put("success", false);
+		failure2.put("message", "my message");
+		json2.put("failure", failure);
+		
+		String test = json.toString(0);
+		String test2 = json2.toString(0);
+		
+		assertEquals(test, test2);
+	}
+	
 	public void testHeavy() {
 		try {
 			String json = readFully(new InputStreamReader(
@@ -53,13 +77,13 @@ public class JSONTest extends TestCase {
 
 				long nptime = (ntime - start);
 				long ptime = (time - ntime);
-				
+
 				float pgain = ((float) (nptime - ptime) / nptime);
 				float mgain = ((float) (nsize - size) / nsize);
-				
+
 				memAccumulated += mgain;
 				procAccumulated += pgain;
-				
+
 				System.out.println("Processing str[" + json.length() + "] " +
 						"--- MGAIN[" + (nsize - size) + "kb] " + mgain + "% --- " +
 						"--- PGAIN[" + (nptime - ptime) + "ms] " + pgain + "% --- " +
@@ -72,13 +96,13 @@ public class JSONTest extends TestCase {
 				assertSame(nobj.optString("NON VALID KEY"), obj.optString("NON VALID KEY"));
 
 				for (int k = 0; k < 10; k++) {
-				//	System.gc();
+					//	System.gc();
 				}
 				// System.out.print("Total memory is " +
 				// MyAgent.getObjectSize(obj));
 			}
-			
-			System.out.println("Proc[" + ((float) (procAccumulated/RUNS)) + "] MEM[" + ((float) (memAccumulated/RUNS)) + "]");
+
+			System.out.println("Proc[" + ((float) (procAccumulated / RUNS)) + "] MEM[" + ((float) (memAccumulated / RUNS)) + "]");
 		}
 		catch (Throwable e) {
 			e.printStackTrace();
