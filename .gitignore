@@ -6,3 +6,7 @@
 bin/com/mufumbo/json/JSONStringer.class
 
 *.class
+
+*.iml
+
+mufumbo-json.iml
