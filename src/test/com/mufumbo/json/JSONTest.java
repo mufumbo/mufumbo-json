@@ -19,6 +19,12 @@ import com.mufumbo.json.JSONObjectBasics;
 
 public class JSONTest extends TestCase {
 	public void testAndroidError() throws JSONException {
+		JSONObject firstTest = new JSONObject();
+		firstTest.put("test", "value");
+		assertSame("value", firstTest.optString("test"));
+		String str = firstTest.toString();
+		assertTrue("{\"test\":\"value\"}".equals(str));
+		
 		JSONKeyCache jkc = new JSONKeyCache();
 		final JSONObject json = new JSONObject(jkc);
 		final JSONObject failure = new JSONObject(jkc);

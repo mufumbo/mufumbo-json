@@ -719,7 +719,7 @@ public class JSONObject implements JSONObjectBasics {
 	 * @return The number of keys in the JSONObject.
 	 */
 	public int length() {
-		return keyCache.keyCount;
+		return values.length;
 	}
 
 	/**
